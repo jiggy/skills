@@ -52,7 +52,7 @@ bonsai check
 ```
 
 `check` stays incomplete until the starters describe real, verified behavior.
-The [adoption guide](https://github.com/jiggy/bonsai/blob/main/skills/bonsai/references/adoption.md) walks through your first
+The [adoption guide](https://github.com/jiggy/bonsai/blob/main/docs/adoption.md) walks through your first
 contract and baseline. See [native installation](docs/native-prototype.md) for
 supported platforms.
 
@@ -662,9 +662,15 @@ Add an exported, unused function to `examples/checkout/src/checkout.ts`, then re
 
 ## Agent skill
 
-Use the [Bonsai skill](https://github.com/jiggy/bonsai/blob/main/skills/bonsai/SKILL.md) to adopt the gate in a project, implement changes within its allowance, or resolve a failing check. Copy the entire `skills/bonsai/` directory into your agent's skill location, such as `.agents/skills/bonsai/`; keep its `references/` directory alongside `SKILL.md`.
+Install the [Bonsai skill](https://github.com/jiggy/bonsai/blob/main/skills/bonsai/SKILL.md) for adopting the gate, implementing changes within its allowance, or resolving a rejected or incomplete check:
 
-The skill is model-invoked: its description makes it discoverable for those tasks. First-time setup is disclosed in a separate reference, while the main file carries the measure, implement, prune, and verify loop.
+```sh
+npx skills add jiggy/bonsai
+```
+
+The skill includes local references for adoption, BDD, design decisions, supported adapters, verification, and CI. Its description lets agents discover it when working in Bonsai projects. Install the Bonsai executable separately with the package command above.
+
+Read the [development workflow](https://github.com/jiggy/bonsai/blob/main/docs/agent-workflow.md) for choosing a complete delivery slice, naming and separating responsibilities, measuring changes, and preserving acceptance. Read [project adoption](https://github.com/jiggy/bonsai/blob/main/docs/adoption.md) for first-time setup.
 
 ## Describe behavior once
 
