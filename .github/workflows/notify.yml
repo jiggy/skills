@@ -1,0 +1,45 @@
+name: Notify source update
+on:
+  workflow_call:
+    secrets:
+      dispatch-token:
+        description: Token with Contents write permission on jiggy/skills
+        required: false
+permissions: {}
+jobs:
+  notify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      SOURCE_REPOSITORY: ${{ github.repository }}
+      SOURCE_REF: ${{ github.ref }}
+      SOURCE_SHA: ${{ github.sha }}
+    steps:
+      - name: Validate source caller
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$SOURCE_REPOSITORY:$SOURCE_REF" in
+            jiggy/bonsai:refs/heads/main|jiggy/flow:refs/heads/main|jiggy/jig:refs/heads/main) ;;
+            *) echo "::error::Only Bonsai, FLOW, and Jig main branches may request a skill refresh." >&2; exit 1 ;;
+          esac
+          if [[ ! "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "::error::The source revision must be a full commit SHA." >&2
+            exit 1
+          fi
+      - name: Request central refresh
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets['dispatch-token'] }}
+        run: |
+          set -euo pipefail
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::SKILLS_DISPATCH_TOKEN is not configured. Hourly reconciliation in jiggy/skills handles missed notifications."
+            echo "Immediate notification is unavailable because SKILLS_DISPATCH_TOKEN is not configured. Hourly reconciliation in jiggy/skills handles missed notifications." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          jq -n --arg repository "$SOURCE_REPOSITORY" --arg sha "$SOURCE_SHA" \
+            '{event_type: "source-updated", client_payload: {repository: $repository, sha: $sha}}' \
+            | gh api --method POST repos/jiggy/skills/dispatches \
+                -H 'Accept: application/vnd.github+json' --input -
+          printf 'Requested a skill refresh for `%s` at `%s`.\n' "$SOURCE_REPOSITORY" "$SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"

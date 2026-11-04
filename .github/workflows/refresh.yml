@@ -1,0 +1,69 @@
+name: Refresh skills
+on:
+  repository_dispatch:
+    types:
+      - source-updated
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/refresh.yml
+      - package.json
+      - package-lock.json
+      - scripts/**
+      - sources.json
+      - sources.lock.json
+      - skills/**
+permissions:
+  contents: read
+concurrency:
+  group: skills-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    if: github.repository == 'jiggy/skills' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - name: Rebuild from current source main revisions
+        run: npm run refresh
+      - name: Verify the rebuilt references
+        run: npm run check
+      - name: Commit generated references
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git add -- sources.lock.json ':(glob)skills/*/reference/**'
+          if git diff --cached --quiet; then
+            echo "Source revisions and generated references are current." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git diff --cached --name-only -z | while IFS= read -r -d '' path; do
+            if [[ "$path" != sources.lock.json && ! "$path" =~ ^skills/[^/]+/reference/.+ ]]; then
+              echo "::error::Refusing to publish unrelated staged path: $path" >&2
+              exit 1
+            fi
+          done
+          git -c user.name='github-actions[bot]' \
+            -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit --signoff -m "chore: refresh skills from source main branches"
+          gh auth setup-git
+          git push origin HEAD:refs/heads/main
+          echo "Published refreshed source revisions and skill references." >> "$GITHUB_STEP_SUMMARY"

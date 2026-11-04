@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "sources": {
+    "bonsai": {
+      "repository": "jiggy/bonsai",
+      "revision": "abbd19c6a7048eb7bca35561ef7c6e6818f34d70"
+    },
+    "flow": {
+      "repository": "jiggy/flow",
+      "revision": "f59cffee241abb6ed8df5a527219f357ed0570b0"
+    },
+    "jig": {
+      "repository": "jiggy/jig",
+      "revision": "2804da138ef7095c748c56d86892c3ba15943030"
+    }
+  }
+}
