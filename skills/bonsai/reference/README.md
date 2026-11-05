@@ -6,7 +6,7 @@
 
 Bonsai gives a codebase a finite space to grow. Executable product contracts earn a global allowance; retained code consumes it. Code without contract ancestry blocks acceptance, even when its own unit test imports it.
 
-This is an initial working prototype for **TypeScript and a bounded native Python slice**. It includes contract compilation and execution, symbol-level analysis, a generated retention graph, a pure policy evaluator, and a CLI. It includes a reusable [GitHub Action](https://github.com/jiggy/bonsai/blob/main/docs/github-action.md) for PR allowance checks. It does not yet provide a hostile-code sandbox, independently published admission service, or general framework support.
+This is an initial working prototype for **TypeScript, a bounded native Python slice, and experimental standalone Rust bindings**. It includes contract compilation and execution, symbol-level analysis, a generated retention graph, a pure policy evaluator, and a CLI. It includes a reusable [GitHub Action](https://github.com/jiggy/bonsai/blob/main/docs/github-action.md) for PR allowance checks. It does not yet provide a hostile-code sandbox, independently published admission service, or general framework support.
 
 The [landing page](https://jiggy.github.io/bonsai/) is maintained in [`website/`](https://github.com/jiggy/bonsai/blob/main/website/README.md) and published to GitHub Pages by the Website Actions workflow after changes merge into `main`.
 
@@ -592,8 +592,13 @@ policy; this temporary development priority does not change acceptance in
 consuming projects.
 
 The unused Oxc prototype was deleted when tsrs replaced it. Its Cargo files and
-Rust sources were removed rather than excluded. Authored Rust in consuming
-projects remains unsupported and measured until a language adapter exists.
+Rust sources were removed rather than excluded. The optional
+[experimental standalone Rust adapter](https://github.com/jiggy/bonsai/blob/main/docs/standalone-rust.md) accepts a narrow
+standard-library-only native binding crate with pinned rust-analyzer/rustc 1.86.0.
+It supports named native handlers without a TypeScript bridge; Cargo workspaces,
+macros, user traits/types, `std::fs`/`std::thread` operations, generated code and mixed-language graphs remain
+incomplete. TypeScript/Python projects need no Rust toolchain. All maintained Rust
+source remains charged.
 
 ## Publishing
 
@@ -697,7 +702,9 @@ export const actions = { 'place-order': placeOrder }
 
 The same registry is statically resolved and executed. Bonsai owns the response assertions; a binding cannot declare an observation passed by merely entering a step. Every scenario outline row becomes a separate scenario, and every observation in that scenario remains a required check. Duplicated scenarios and files do not create extra allowance. Array indices normalize for accounting: `items[0].price` and `items[3].price` both count as `items[*].price`. Their assertions still check the exact positions.
 
-The first grammar supports only these two literal step forms, JSON inputs and expected values, ordinary dotted selectors, and numeric array indices. Backgrounds and outline expansion come from the official Gherkin parser. Unsupported steps, skip tags, DocStrings, DataTables, missing bindings, and analysis errors block acceptance.
+The built-in grammar supports these two literal step forms, JSON inputs and expected values, ordinary dotted selectors, and numeric array indices. TypeScript projects can also export literal `steps` definitions beside `actions` to map publisher-facing Given/When/Then language to input context, canonical actions, and individually required observations. Bonsai inspects that metadata without running step callbacks and retains the feature and definition locations. See [domain steps and named routes](https://github.com/jiggy/bonsai/blob/main/docs/integrations.md) for the complete example and supported forms.
+
+Backgrounds and outline expansion come from the official Gherkin parser. Unsupported or ambiguous steps, skip tags, DocStrings, DataTables, missing bindings, and analysis errors block acceptance. Existing invocation/response contracts need no migration; Python projects retain the built-in grammar.
 
 ## Set the constraint
 
@@ -843,6 +850,22 @@ ambient type discovery and blocks known semantic gaps, including disabling the
 default library through a source directive. This is not universal compiler
 compatibility. See [native scope and commands](docs/native-prototype.md) and
 [performance measurements](https://github.com/jiggy/bonsai/blob/main/docs/performance.md).
+
+### Reviewed Jig binding routes
+
+The bounded Jig adapter follows a literal `jig run binding:<id>` launch with an
+explicit project `cwd`, local `discover` roots, and a literal binding package to
+its maintained `FLOW.ts` entrypoint and referenced child methods. Unrelated
+packages and exports receive no ancestry from that route. `explain` remains
+static and does not run Jig or application code.
+
+Jig runs an approved snapshot. Before application import and after verification,
+`check` uses read-only `jig inspect` results to require that the approved package,
+settings, and complete package digest match the analyzed source and that approval
+stays unchanged. Missing or stale approvals block acceptance under the existing
+feedback deadline. Bonsai never approves changes itself. See the
+[integration guide](https://github.com/jiggy/bonsai/blob/main/docs/integrations.md) for the supported launch/configuration
+subset, qualified runtime versions, and execution limits.
 
 ### Literal text resources
 
