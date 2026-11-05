@@ -3,7 +3,7 @@
   "sources": {
     "bonsai": {
       "repository": "jiggy/bonsai",
-      "revision": "6056522a9eac6380002db6139bf0574aa909f06b"
+      "revision": "95ad89794f577d0442567167f405c99b54fbf494"
     },
     "flow": {
       "repository": "jiggy/flow",
@@ -11,7 +11,7 @@
     },
     "jig": {
       "repository": "jiggy/jig",
-      "revision": "70ecde695d4acc5a7910f034c32fb483b1b9372a"
+      "revision": "e80b0ea45ef1f9fad3859e492e7272f7d878a62c"
     }
   }
 }
